@@ -25,7 +25,10 @@ SECRET_KEY = 'django-insecure-oneju+d93a+sq+d@o8kf=2rsgvk^m28)=sb_9i_%-#k*$7)j!$
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# For local development/mobile clients. For production, lock this down.
+ALLOWED_HOSTS = ["*"]
+
+
 
 
 # Application definition
@@ -37,6 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'users',
+    'profiles',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -74,8 +81,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'Tim-tinder',          # имя базы данных
+        'USER': 'postgres',      # ваш пользователь
+        'PASSWORD': '203012',# пароль пользователя
+        'HOST': 'localhost',     # сервер базы (для локального обычно localhost)
+        'PORT': '5432',          # порт PostgreSQL
     }
 }
 
@@ -115,3 +126,20 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Use custom user model defined in users app.
+AUTH_USER_MODEL = "users.User"
+
+# DRF settings: mobile client will authenticate via token.
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.TokenAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
+}
+
+# Media files (avatar uploads).
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
