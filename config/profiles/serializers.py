@@ -3,7 +3,7 @@ from .models import Profile
 
 
 class ProfileSerializer(serializers.ModelSerializer):
-    # Mobile client doesn't choose user; backend sets it from auth token.
+
     user = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
