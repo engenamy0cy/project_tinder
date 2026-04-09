@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 
 class FirstName (models.Model):
@@ -47,18 +48,28 @@ class Avatar (models.Model):
 
     def __str__(self):
         return self.name
+    
+class Created_at (models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+    
+class Updated_at (models.Model):
+    updated_at = models.DateTimeField(auto_now=True)
 
 class Profiles(models.Model):
-    
-    first_name = models.ForeignKey(FirstName, on_delete=models.PROTECT, verbose_name="имя",related_name="First name",null=True)
-    last_name = models.ForeignKey(LastName, on_delete=models.PROTECT, verbose_name="фамилия",related_name="Last name",null=True)
-    bio = models.ForeignKey(Bio, on_delete=models.PROTECT, verbose_name="описание",related_name="bio",null=True)
-    age = models.ForeignKey(Age, on_delete=models.PROTECT, verbose_name="возраст",related_name="age",null=True)
-    gender = models.ForeignKey(Gender, on_delete=models.CASCADE, verbose_name="пол",related_name="gender",null=True)
-    city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name="город",related_name="city",null=True)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, verbose_name="страна",related_name="country",null=True)
-    avatar = models.ForeignKey(Avatar, on_delete=models.PROTECT, verbose_name= "картинка профиля",related_name="avatar",null=True)
-    
+    first_name = models.ForeignKey(FirstName, on_delete=models.PROTECT verbose_name="цвет",related_name="cars",null=True)
+    last_name = models.ForeignKey(LastName, on_delete=models.PROTECT verbose_name="цвет",related_name="cars",null=True)
+    bio = models.ForeignKey(Bio, on_delete=models.PROTECT verbose_name="цвет",related_name="cars",null=True)
+    age = models.ForeignKey(Age, on_delete=models.PROTECT verbose_name="цвет",related_name="cars",null=True)
+    gender = models.ForeignKey(Gender, on_delete=models.CASCADE verbose_name="цвет",related_name="cars",null=True)
+    city = models.ForeignKey(City, on_delete=models.CASCADE verbose_name="цвет",related_name="cars",null=True)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE verbose_name="цвет",related_name="cars",null=True)
+    avatar = models.ForeignKey(Avatar, on_delete=models.PROTECT verbose_name="цвет",related_name="cars",null=True)
+    created_at = models.ForeignKey(auto_now_add=True)
+    updated_at = models.ForeignKey(auto_now=True)
+
 
     def __str__(self):
         return self.name
