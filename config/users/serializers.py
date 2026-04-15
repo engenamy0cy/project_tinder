@@ -1,38 +1,34 @@
 from rest_framework import serializers
+from .models import Email, Is_online, Is_verifed, Created_at, Updated_at, Last_activity
 
-from .models import User
-
-
-class UserSerializer(serializers.ModelSerializer):
+class EmailSerializers(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = (
-            "id",
-            "username",
-            "email",
-            "is_verified",
-            "is_online",
-            "created_at",
-            "updated_at",
-            "last_activity",
-        )
+        model = Email
+        fields = '__all__'
 
-
-class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
-
+class Is_verifedSerializers(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ("username", "email", "password")
+        model = Is_verifed
+        fields = '__all__'
 
-    def create(self, validated_data):
-        return User.objects.create_user(
-            username=validated_data["username"],
-            email=validated_data["email"],
-            password=validated_data["password"],
-        )
+class Is_onlineSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Is_online
+        fields = '__all__'
+
+class Created_atSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Created_at
+        fields = '__all__'
+
+class Updated_atSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Updated_at
+        fields = '__all__'
+
+class Last_activitySerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Last_activity
+        fields = '__all__'
 
 
-class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField(write_only=True)

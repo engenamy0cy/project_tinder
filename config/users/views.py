@@ -1,61 +1,27 @@
-from django.contrib.auth import authenticate
-from rest_framework import generics, status
-from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
-from .models import User
-from .serializers import LoginSerializer, RegisterSerializer, UserSerializer
+from rest_framework import viewsets
+from .models import Email, Is_verifed, Is_online, Created_at, Updated_at, Last_activity
+from .serializers import EmailSerializers, Is_verifedSerializers, Is_onlineSerializers, Created_atSerializers, Updated_atSerializers, Last_activitySerializers
 
+class EmailViewSet(viewsets.ModelViewSet):
+    queryset = Email.objects.all()
+    serializer_class = EmailSerializers
 
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = RegisterSerializer
-    permission_classes = [AllowAny]
+class Is_VerifedViewSet(viewsets.ModelViewSet):
+    queryset = Is_verifed.objects.all()
+    serializer_class = Is_verifedSerializers
 
-    def perform_create(self, serializer):
-        user = serializer.save()
-        token, _ = Token.objects.get_or_create(user=user)
-        return user, token
+class Is_OnlineViewSet(viewsets.ModelViewSet):
+    queryset = Is_online.objects.all()
+    serializer_class = Is_onlineSerializers
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        token, _ = Token.objects.get_or_create(user=user)
-        return Response(
-            {"token": token.key, "user": UserSerializer(user).data},
-            status=status.HTTP_201_CREATED,
-        )
+class Created_atViewSet(viewsets.ModelViewSet):
+    queryset = Created_at.objects.all()
+    serializer_class = Created_atSerializers
 
+class Updated_atViewSet(viewsets.ModelViewSet):
+    queryset = Updated_at.objects.all()
+    serializer_class = Updated_atSerializers
 
-class UserView(generics.RetrieveAPIView):
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_object(self):
-        return self.request.user
-
-
-class LoginView(generics.GenericAPIView):
-    serializer_class = LoginSerializer
-    permission_classes = [AllowAny]
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        username = serializer.validated_data["username"]
-        password = serializer.validated_data["password"]
-
-        user = authenticate(request, username=username, password=password)
-        if not user:
-            return Response(
-                {"detail": "Invalid credentials"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        token, _ = Token.objects.get_or_create(user=user)
-        return Response(
-            {"token": token.key, "user": UserSerializer(user).data},
-            status=status.HTTP_200_OK,
-        )
+class Last_activiryViewSet(viewsets.ModelViewSet):
+    queryset = Last_activity.objects.all()
+    serializer_class = Last_activitySerializers
