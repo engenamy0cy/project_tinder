@@ -1,5 +1,5 @@
 import pytest
-from profiles.models import Profile
+from profiles.models import Profiles
 from users.models import User
 
 
@@ -24,7 +24,7 @@ def user(create_user):
 
 @pytest.fixture
 def profile(user):
-    return Profile.objects.create(
+    return Profiles.objects.create(
         user=user,
         first_name="John",
         last_name="Doe",
@@ -36,7 +36,7 @@ def profile(user):
     )
 import pytest
 from users.models import User
-from profiles.models import Profile
+from profiles.models import Profiles
 
 
 @pytest.fixture
@@ -62,7 +62,7 @@ def user(create_user):
 @pytest.fixture
 def profile(user):
     """Создает профиль для пользователя"""
-    profile = Profile.objects.create(
+    profile = Profiles.objects.create(
         user=user,
         first_name="John",
         last_name="Doe",
