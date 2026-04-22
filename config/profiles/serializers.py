@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Profile, LastName, FirstName, Age, City, Country, Gender, Avatar, Bio
+from .models import LastName, FirstName, Age, City, Country, Gender, Avatar, Bio, Profiles
 
 class FirstNameSerializers (serializers.ModelSerializer):
     class Meta:
@@ -45,5 +45,5 @@ class ProfilesSerializers(serializers.ModelSerializer):
     first_name = serializers.CharField(source = 'first.name', read_only = True)
     last_name = serializers.CharField(source = 'last.name', read_only = True)
     class Meta:
-        model = Profile
+        model = Profiles
         fields = '__all__'

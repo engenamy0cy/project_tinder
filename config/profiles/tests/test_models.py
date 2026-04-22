@@ -1,10 +1,10 @@
 import pytest
-from profiles.models import Profile
+from profiles.models import Profiles
 
 
 @pytest.mark.django_db
 def test_create_profile(user):
-    profile = Profile.objects.create(
+    profile = Profiles.objects.create(
         user=user,
         first_name="Alice",
         last_name="Smith",
@@ -20,5 +20,5 @@ def test_create_profile(user):
 
 
 @pytest.mark.django_db
-def test_profile_str(profile):
-    assert str(profile) == f"{profile.first_name} ({profile.user.username})"
+def test_profile_str(profiles):
+    assert str(profiles) == f"{profiles.first_name} ({profiles.user.username})"

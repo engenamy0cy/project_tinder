@@ -1,53 +1,53 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-class FirstName (models.Model):
+class FirstName(models.Model):
     first_name = models.CharField(max_length=50)
 
     def __str__(self):
-        return self.name
+        return self.first_name
 
-class LastName (models.Model):
+class LastName(models.Model):
     last_name = models.CharField(max_length=50, blank=True)
 
     def __str__(self):
-        return self.name
+        return self.last_name
     
-class Bio (models.Model):
+class Bio(models.Model):
     bio = models.TextField(blank=True)
 
     def __str__(self):
-        return self.name
+        return self.bio
     
-class Age (models.Model):
+class Age(models.Model):
     age = models.IntegerField()
-
-    def __str__(self):
-        return self.name
     
-class Gender (models.Model):
+    def __int__(self):
+        return self.age
+    
+class Gender(models.Model):
     gender = models.CharField(max_length=20)
 
     def __str__(self):
-        return self.name
+        return self.gender
     
-class City (models.Model):
+class City(models.Model):
     city = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.name
+        return self.city
     
-class Country (models.Model):
+class Country(models.Model):
     country = models.CharField(max_length=100)
 
     def __str__(self):
-        return self.name
+        return self.country
     
-class Avatar (models.Model):
-    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+class Avatar(models.Model):
+    avatar = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
 
     def __str__(self):
-        return self.name
+        return self.avatar
 
 class Profiles(models.Model):
     first_name = models.ForeignKey(FirstName, on_delete=models.PROTECT, verbose_name="Имя",null=True)
@@ -60,4 +60,4 @@ class Profiles(models.Model):
     avatar = models.ForeignKey(Avatar, on_delete=models.PROTECT, verbose_name="Аватар",null=True)
 
     def __str__(self):
-        return self.name
+        return self.profiles
