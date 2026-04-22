@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Email, Is_online, Is_verifed, Created_at, Updated_at, Last_activity
+from .models import Email, Is_online, Is_verifed, Created_at, Updated_at, Last_activity, User
 
 class EmailSerializers(serializers.ModelSerializer):
     class Meta:
@@ -31,4 +31,13 @@ class Last_activitySerializers(serializers.ModelSerializer):
         model = Last_activity
         fields = '__all__'
 
-
+class User(serializers.ModelSerializer):
+    email = serializers.CharField(source = 'email.name', read_only = True)
+    is_verified = serializers.CharField(source = 'is_verified.name', read_only = True)
+    is_online = serializers.CharField(source = 'is_online', read_only = True)
+    created_at = serializers.CharField(source = 'created_at.name', read_only = True)
+    updated_at = serializers.CharField(source = 'updated_at.name', read_only = True)
+    last_activity = serializers.CharField(source = 'last_activity.name', read_only = True)
+    class Meta:
+        model = User
+        fields = '__all__'
