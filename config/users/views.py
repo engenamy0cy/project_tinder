@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from .models import Email, Is_verifed, Is_online, Created_at, Updated_at, Last_activity
-from .serializers import EmailSerializers, Is_verifedSerializers, Is_onlineSerializers, Created_atSerializers, Updated_atSerializers, Last_activitySerializers
+from .models import Email, Is_verifed, Is_online, Created_at, Updated_at, Last_activity, User
+from .serializers import EmailSerializers, Is_verifedSerializers, Is_onlineSerializers, Created_atSerializers, Updated_atSerializers, Last_activitySerializers, UserSerializers
 
 class EmailViewSet(viewsets.ModelViewSet):
     queryset = Email.objects.all()
@@ -25,3 +25,7 @@ class Updated_atViewSet(viewsets.ModelViewSet):
 class Last_activiryViewSet(viewsets.ModelViewSet):
     queryset = Last_activity.objects.all()
     serializer_class = Last_activitySerializers
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializers

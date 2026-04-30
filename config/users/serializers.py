@@ -31,7 +31,7 @@ class Last_activitySerializers(serializers.ModelSerializer):
         model = Last_activity
         fields = '__all__'
 
-class User(serializers.ModelSerializer):
+class UserSerializers(serializers.ModelSerializer):
     email = serializers.CharField(source = 'email.name', read_only = True)
     is_verified = serializers.CharField(source = 'is_verified.name', read_only = True)
     is_online = serializers.CharField(source = 'is_online', read_only = True)
