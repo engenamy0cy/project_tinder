@@ -27,6 +27,12 @@ class Age(models.Model):
     
 class Gender(models.Model):
     gender = models.CharField(max_length=20)
+    GEN = [
+        ("Мужской","Man"),
+        ("Женский","Woman"),
+        ("Средний","don't indicate")
+    ]
+    status_gen = models.CharField(max_length=20, choices=GEN, default=" ")
 
     def __str__(self):
         return self.gender
@@ -47,7 +53,9 @@ class Avatar(models.Model):
     avatar = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
 
     def __str__(self):
-        return self.avatar
+        if self.avatar:
+            return self.avatar.name
+        return "None"
 
 class Profiles(models.Model):
     first_name = models.ForeignKey(FirstName, on_delete=models.PROTECT, verbose_name="Имя",null=True)
@@ -60,4 +68,6 @@ class Profiles(models.Model):
     avatar = models.ForeignKey(Avatar, on_delete=models.PROTECT, verbose_name="Аватар",null=True)
 
     def __str__(self):
-        return self.profiles
+        if self.first_name and self.last_name:
+            return f"{self.first_name.first_name} {self.last_name.last_name}"
+        return f"Profile {self.id}"
