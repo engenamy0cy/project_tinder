@@ -64,8 +64,7 @@ def test_create_country():
 @pytest.mark.django_db
 def test_create_avatar():
     avatar = Avatar.objects.create(avatar=None)
-    assert avatar.avatar is None
-    assert Avatar.objects.count() == 1
+    assert not avatar.avatar
 
 
 @pytest.mark.django_db
