@@ -5,7 +5,7 @@ class Email(models.Model):
     email = models.EmailField(unique=True)
 
     def __str__(self):
-        return self.email
+        return str(self.email)
 
 class Is_verifed(models.Model):
     is_verified = models.BooleanField(default=False)

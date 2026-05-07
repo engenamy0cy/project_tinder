@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.conf import settings
+from users.models import User
 
 class FirstName(models.Model):
     first_name = models.CharField(max_length=50)
@@ -58,6 +60,11 @@ class Avatar(models.Model):
         return "None"
 
 class Profiles(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='profile'
+    )
     first_name = models.ForeignKey(FirstName, on_delete=models.PROTECT, verbose_name="Имя",null=True)
     last_name = models.ForeignKey(LastName, on_delete=models.PROTECT, verbose_name="Фамилия",null=True)
     bio = models.ForeignKey(Bio, on_delete=models.PROTECT, verbose_name="Биография",null=True)
