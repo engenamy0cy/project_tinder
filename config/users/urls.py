@@ -1,8 +1,9 @@
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
-from .views import EmailViewSet, Is_VerifedViewSet, Is_OnlineViewSet, Created_atViewSet, Updated_atViewSet, Last_activiryViewSet, UserViewSet
+from .views import EmailViewSet, IdViewSet, Is_VerifedViewSet, Is_OnlineViewSet, Created_atViewSet, Updated_atViewSet, Last_activiryViewSet, UserViewSet
 
 router = DefaultRouter()
+router.register(r'id', IdViewSet)
 router.register(r'email',EmailViewSet)
 router.register(r'is_verifed', Is_VerifedViewSet)
 router.register(r'is_online', Is_OnlineViewSet)

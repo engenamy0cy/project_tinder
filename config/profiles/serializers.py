@@ -42,8 +42,6 @@ class AvatarSerializers (serializers.ModelSerializer):
         fields = '__all__'
 
 class ProfilesSerializers(serializers.ModelSerializer):
-    first_name = serializers.CharField(source = 'first.name', read_only = True)
-    last_name = serializers.CharField(source = 'last.name', read_only = True)
     class Meta:
         model = Profiles
         fields = '__all__'

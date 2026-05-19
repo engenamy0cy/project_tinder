@@ -1,10 +1,11 @@
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
-from .views import FirstNameViewSet, LastNameViewSet, AgeViewSet, CityViewSet, CountryViewSet,GenderViewSet, AvatarViewSet, ProfilesViewSet
+from .views import FirstNameViewSet, LastNameViewSet,BioViewSet, AgeViewSet, CityViewSet, CountryViewSet,GenderViewSet, AvatarViewSet, ProfilesViewSet
 
 router = DefaultRouter()
 router.register(r'firstname',FirstNameViewSet)
 router.register(r'lastname', LastNameViewSet)
+router.register(r'bio', BioViewSet)
 router.register(r'age', AgeViewSet)
 router.register(r'city',CityViewSet)
 router.register(r'country',CountryViewSet)

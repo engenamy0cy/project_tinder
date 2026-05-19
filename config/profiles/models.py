@@ -28,7 +28,6 @@ class Age(models.Model):
         return self.age
     
 class Gender(models.Model):
-    gender = models.CharField(max_length=20)
     GEN = [
         ("Мужской","Man"),
         ("Женский","Woman"),
@@ -37,7 +36,7 @@ class Gender(models.Model):
     status_gen = models.CharField(max_length=20, choices=GEN, default=" ")
 
     def __str__(self):
-        return self.gender
+        return self.status_gen
     
 class City(models.Model):
     city = models.CharField(max_length=100)
