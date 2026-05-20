@@ -2,8 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 class Email(models.Model):
-    email = models.EmailField(unique=True)
-
+    email = models.EmailField(unique=True, blank=True, null=True)
     def __str__(self):
         return str(self.email)
 
@@ -36,15 +35,8 @@ class Last_activity(models.Model):
 
     def __str__(self):
         return str(self.last_activity)
-    
-class Id(models.Model):
-    id = models.AutoField(auto_created=1)
-
-    def __str__(self):
-        return str(self.id)
 
 class User(AbstractUser):
-    id = models.ForeignKey(Id, on_delete = models.PROTECT,verbose_name="id", null=True)
     email = models.ForeignKey(Email, on_delete=models.PROTECT, verbose_name="Email", null=True)
     is_verified = models.ForeignKey(Is_verifed, on_delete=models.PROTECT, verbose_name="Проверено", null=True)
     is_online = models.ForeignKey(Is_online, on_delete=models.PROTECT, verbose_name="Онлайн", null=True)

@@ -4,7 +4,7 @@
 
 from typing import List,Set
 from django.db.models import Prefetch
-from profiles.models import LastName, FirstName, Age, City, Country, Gender, Avatar, Bio,
+from profiles.models import LastName, FirstName, Age, City, Country, Gender, Avatar, Bio
 from .models import Profiles
 
 class ProfileSelectionService:
@@ -15,7 +15,7 @@ class ProfileSelectionService:
     """ 
     @staticmethod
 
-    def get_possible_profiles(category_id:int, product_ids:List[int] -> List[Profiles]):
+    def get_possible_profiles(category_id:int, product_ids:List[int]) -> (List[Profiles]):
 
     #возвращает список блюд заданной категории
     #для которых все ингридиенты содержатся в пределах product_id

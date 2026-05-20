@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Email, Is_online, Is_verifed, Created_at, Updated_at, Last_activity, User, Id
+from .models import Email, Is_online, Is_verifed, Created_at, Updated_at, Last_activity, User
 
 class EmailSerializers(serializers.ModelSerializer):
     class Meta:
@@ -35,8 +35,3 @@ class UserSerializers(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
-
-class IdSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Id
-        fields ='__all__'

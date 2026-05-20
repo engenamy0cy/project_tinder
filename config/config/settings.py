@@ -44,9 +44,10 @@ INSTALLED_APPS = [
     'profiles',
     'rest_framework',
     'corsheaders',
+    'tinder',
 ]
 
-AUTH_USER_MODEL = 'users.CustomUser'
+AUTH_USER_MODEL = 'tinder.CustomUser'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -84,7 +85,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Tim-tinder',
+        'NAME': 'db-tinder',
         'USER': 'postgres',
         'PASSWORD': '1234',
         'HOST': 'localhost',

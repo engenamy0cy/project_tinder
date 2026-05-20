@@ -29,14 +29,20 @@ class Age(models.Model):
     
 class Gender(models.Model):
     GEN = [
-        ("Мужской","Man"),
-        ("Женский","Woman"),
-        ("Средний","don't indicate")
+        ("Man","Мужской"),
+        ("Woman","Женский"),
+        ("don't indicate","Средний")
     ]
-    status_gen = models.CharField(max_length=20, choices=GEN, default=" ")
+    gender = models.CharField(
+        max_length=20,
+        choices=GEN,
+        default='NotSpecified',
+        verbose_name='Пол'
+    )
+    status_gen = models.CharField(max_length=20, choices=GEN, default="Man")
 
     def __str__(self):
-        return self.status_gen
+        return self.gender
     
 class City(models.Model):
     city = models.CharField(max_length=100)
@@ -59,20 +65,18 @@ class Avatar(models.Model):
         return "None"
 
 class Profiles(models.Model):
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
-        related_name='profile'
-    )
+    user = models.OneToOneField(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='profile',primary_key=True)
     first_name = models.ForeignKey(FirstName, on_delete=models.PROTECT, verbose_name="Имя",null=True)
     last_name = models.ForeignKey(LastName, on_delete=models.PROTECT, verbose_name="Фамилия",null=True)
     bio = models.ForeignKey(Bio, on_delete=models.PROTECT, verbose_name="Биография",null=True)
     age = models.ForeignKey(Age, on_delete=models.PROTECT, verbose_name="Возраст",null=True)
-    gender = models.ForeignKey(Gender, on_delete=models.CASCADE, verbose_name="Пол",null=True)
+    gender = models.ForeignKey(Gender, on_delete=models.CASCADE, verbose_name="Пол")
     city = models.ForeignKey(City, on_delete=models.CASCADE, verbose_name="Город",null=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE, verbose_name="Страна",null=True)
     avatar = models.ForeignKey(Avatar, on_delete=models.PROTECT, verbose_name="Аватар",null=True)
 
+    def __str__(self):
+        return f"Profile {self.user.id} - {self.user.username}"
     def __str__(self):
         if self.first_name and self.last_name:
             return f"{self.first_name.first_name} {self.last_name.last_name}"
