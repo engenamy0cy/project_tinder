@@ -1,5 +1,17 @@
 import pytest
-from profiles.models import Profiles
+
+from profiles.models import (
+    Age,
+    Bio,
+    City,
+    Country,
+    FirstName,
+    Game,
+    Gender,
+    Hours_in_game,
+    LastName,
+    Profiles,
+)
 from users.models import User
 
 
@@ -23,53 +35,21 @@ def user(create_user):
 
 
 @pytest.fixture
-def profile(user):
+def game_dota2(db):
+    return Game.objects.create(game="dota2")
+
+
+@pytest.fixture
+def profile(user, game_dota2):
     return Profiles.objects.create(
         user=user,
-        first_name="John",
-        last_name="Doe",
-        bio="Hello world",
-        age=25,
-        gender="male",
-        city="New York",
-        country="USA",
+        first_name=FirstName.objects.create(first_name="John"),
+        last_name=LastName.objects.create(last_name="Doe"),
+        bio=Bio.objects.create(bio="Hello world"),
+        age=Age.objects.create(age=25),
+        gender=Gender.objects.create(gender="Man"),
+        city=City.objects.create(city="Moscow"),
+        country=Country.objects.create(country="Russia"),
+        main_game=game_dota2,
+        hours_in_game=Hours_in_game.objects.create(hours=100),
     )
-import pytest
-from users.models import User
-from profiles.models import Profiles
-
-
-@pytest.fixture
-def create_user():
-    """Фабрика для создания пользователей"""
-    def make_user(**kwargs):
-        defaults = {
-            "username": "testuser",
-            "email": "test@test.com",
-            "password": "password123",
-        }
-        defaults.update(kwargs)
-        user = User.objects.create_user(**defaults)
-        return user
-    return make_user
-
-
-@pytest.fixture
-def user(create_user):
-    return create_user()
-
-
-@pytest.fixture
-def profile(user):
-    """Создает профиль для пользователя"""
-    profile = Profiles.objects.create(
-        user=user,
-        first_name="John",
-        last_name="Doe",
-        bio="Hello world",
-        age=25,
-        gender="male",
-        city="New York",
-        country="USA"
-    )
-    return profile

@@ -1,3 +1,7 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Match, Message, Swipe
+
+admin.site.register(Swipe)
+admin.site.register(Match)
+admin.site.register(Message)
