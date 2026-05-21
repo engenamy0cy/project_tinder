@@ -1,37 +1,56 @@
 """
-вся алгометрическая логика работа с несколькими моделями расчеты валидация требующая доступ к бд
+Сервисная логика профилей. Поиск и свайпы — в tinder.services.SearchService.
 """
 
-from typing import List,Set
-from django.db.models import Prefetch
-from profiles.models import LastName, FirstName, Age, City, Country, Gender, Avatar, Bio
-from .models import Profiles
+from typing import List, Set
+
+from django.db.models import Q
+
+from profiles.models import Game, Profiles
+from tinder.services import SearchService
+
 
 class ProfileSelectionService:
-    #сервис для выбора блюд по выбранной категории и набору продуктов
-    """
-    метод класса который не получает автоматически ссылку на экземпляр класса(self) и не получает ссылку на сам класс
-    формально ведет себя как обычная функция но логически принадлежит самому классу и вызывается через класс или его экземпляр
-    """ 
     @staticmethod
-
-    def get_possible_profiles(category_id:int, product_ids:List[int]) -> (List[Profiles]):
-
-    #возвращает список блюд заданной категории
-    #для которых все ингридиенты содержатся в пределах product_id
-    #получаем блюда нужной категории с предварительной загрузкой ингридиентов
-        profiles = Profiles.objects.filter(category_id = category_id).prefetch_related(
-            Prefetch('products',queryset= Profiles.objects.only('id'))
+    def get_profiles_by_game(game_code: str) -> List[Profiles]:
+        return list(
+            Profiles.objects.filter(
+                Q(main_game__game=game_code) | Q(games__game=game_code)
+            )
+            .select_related("user", "main_game", "age", "gender", "hours_in_game")
+            .distinct()
         )
-        product_set = set(product_ids)
+
+    @staticmethod
+    def get_profiles_by_games(game_codes: List[str]) -> List[Profiles]:
+        if not game_codes:
+            return []
+        game_set: Set[str] = set(game_codes)
         result = []
-        for profile in profiles:
-            profile_product_set = set(profile.products.value_list('id',flat=True))
-            if profile_product_set.issubset(product_set):
+        for profile in Profiles.objects.prefetch_related("games").select_related(
+            "main_game"
+        ):
+            profile_games: Set[str] = set(
+                profile.games.values_list("game", flat=True)
+            )
+            if profile.main_game:
+                profile_games.add(profile.main_game.game)
+            if game_set.issubset(profile_games):
                 result.append(profile)
         return result
-    
+
     @staticmethod
-    #для формы вывода возвращаем все категории с их продуктами
-    def get_product_and_category():
-        return FirstName.objects.prefetch_related('products').all() 
+    def get_feed_for_user(user_id: int, game_codes: List[str] | None = None, limit: int = 20):
+        cards = SearchService.search(
+            user_id,
+            game=game_codes[0] if game_codes else None,
+            limit=limit,
+        )
+        return cards
+
+
+class SwipeService:
+    """Обёртка для тестов; логика в SearchService."""
+
+    record_swipe = staticmethod(SearchService._record_swipe)
+    get_matches_for_user = staticmethod(SearchService.get_matches_for_user)
