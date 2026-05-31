@@ -40,13 +40,14 @@ class ProfileSelectionService:
         return result
 
     @staticmethod
-    def get_feed_for_user(user_id: int, game_codes: List[str] | None = None, limit: int = 20):
-        cards = SearchService.search(
+    def get_feed_for_user(
+        user_id: int, game_codes: List[str] | None = None, limit: int = 20
+    ):
+        return SearchService.search(
             user_id,
             game=game_codes[0] if game_codes else None,
             limit=limit,
         )
-        return cards
 
 
 class SwipeService:

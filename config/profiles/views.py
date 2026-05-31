@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -14,6 +14,8 @@ from .models import (
     LastName,
     Profiles,
 )
+from .profile_payload import ensure_default_games, profile_to_card
+from .profile_upsert import upsert_profile
 from .serializers import (
     AgeSerializer,
     AvatarSerializer,
@@ -24,9 +26,26 @@ from .serializers import (
     GameSerializer,
     GenderSerializer,
     LastNameSerializer,
+    ProfileWriteSerializer,
     ProfilesSerializer,
 )
 from .services import ProfileSelectionService
+
+
+def _profile_queryset():
+    return Profiles.objects.select_related(
+        "user",
+        "first_name",
+        "last_name",
+        "bio",
+        "age",
+        "gender",
+        "hours_in_game",
+        "city",
+        "country",
+        "main_game",
+        "avatar",
+    ).prefetch_related("games")
 
 
 class FirstNameViewSet(viewsets.ModelViewSet):
@@ -73,10 +92,42 @@ class GameViewSet(viewsets.ModelViewSet):
     queryset = Game.objects.all()
     serializer_class = GameSerializer
 
+    def list(self, request, *args, **kwargs):
+        ensure_default_games()
+        return super().list(request, *args, **kwargs)
+
 
 class ProfilesViewSet(viewsets.ModelViewSet):
-    queryset = Profiles.objects.all()
+    queryset = _profile_queryset()
     serializer_class = ProfilesSerializer
+
+    def list(self, request, *args, **kwargs):
+        profiles = self.get_queryset()
+        return Response([profile_to_card(p) for p in profiles])
+
+    def retrieve(self, request, *args, **kwargs):
+        profile = self.get_object()
+        return Response(profile_to_card(profile))
+
+    @action(detail=False, methods=["get"])
+    def me(self, request):
+        user_id = request.query_params.get("user_id")
+        if not user_id:
+            return Response({"detail": "user_id required"}, status=400)
+        profile = _profile_queryset().filter(user_id=int(user_id)).first()
+        if not profile:
+            return Response({"detail": "profile not found"}, status=404)
+        return Response(profile_to_card(profile))
+
+    @action(detail=False, methods=["post", "put", "patch"])
+    def save(self, request):
+        user_id = request.data.get("user_id") or request.query_params.get("user_id")
+        if not user_id:
+            return Response({"detail": "user_id required"}, status=400)
+        ser = ProfileWriteSerializer(data=request.data)
+        ser.is_valid(raise_exception=True)
+        card = upsert_profile(int(user_id), ser.validated_data)
+        return Response(card)
 
     @action(detail=False, methods=["get"])
     def feed(self, request):
@@ -84,7 +135,10 @@ class ProfilesViewSet(viewsets.ModelViewSet):
         games = request.query_params.getlist("game")
         if not user_id:
             return Response({"detail": "user_id required"}, status=400)
-        profiles = ProfileSelectionService.get_feed_for_user(
-            int(user_id), game_codes=games or None
+        from tinder.services import SearchService
+
+        cards = SearchService.search(
+            int(user_id),
+            game=games[0] if games else None,
         )
-        return Response(ProfilesSerializer(profiles, many=True).data)
+        return Response({"results": cards, "count": len(cards)})

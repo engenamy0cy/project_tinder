@@ -18,7 +18,6 @@ class UserSerializer(serializers.ModelSerializer):
             "is_online_flag",
             "last_activity_at",
         )
-        extra_kwargs = {"password": {"write_only": True}}
 
     def get_is_verified_flag(self, obj):
         return bool(obj.is_verified and obj.is_verified.is_verified)
@@ -30,3 +29,15 @@ class UserSerializer(serializers.ModelSerializer):
         if obj.last_activity and obj.last_activity.last_activity:
             return obj.last_activity.last_activity.isoformat()
         return None
+
+
+class UserRegisterSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField()
+    password = serializers.CharField(min_length=6, write_only=True)
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
+    game = serializers.ChoiceField(
+        choices=["dota2", "cs2", "majestic"], required=False
+    )
+    age = serializers.IntegerField(required=False, allow_null=True)

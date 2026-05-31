@@ -13,6 +13,7 @@ from .models import (
     LastName,
     Profiles,
 )
+from .profile_payload import profile_to_card
 
 
 class FirstNameSerializer(serializers.ModelSerializer):
@@ -75,7 +76,41 @@ class GameSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class ProfileCardSerializer(serializers.Serializer):
+    """Плоская карточка — то же, что отдаёт /tinder/search/."""
+
+    def to_representation(self, instance):
+        return profile_to_card(instance)
+
+
+class ProfileWriteSerializer(serializers.Serializer):
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
+    bio = serializers.CharField(required=False, allow_blank=True)
+    age = serializers.IntegerField(required=False, allow_null=True)
+    hours_in_game = serializers.IntegerField(required=False, allow_null=True)
+    gender = serializers.ChoiceField(
+        choices=["Man", "Woman", "dont_indicate"], required=False
+    )
+    city = serializers.CharField(required=False, allow_blank=True)
+    country = serializers.CharField(required=False, allow_blank=True)
+    game = serializers.ChoiceField(
+        choices=["dota2", "cs2", "majestic"], required=False
+    )
+    games = serializers.ListField(
+        child=serializers.ChoiceField(choices=["dota2", "cs2", "majestic"]),
+        required=False,
+    )
+
+
 class ProfilesSerializer(serializers.ModelSerializer):
+    """Совместимость с админкой; для API списка используйте ProfileCardSerializer."""
+
+    card = serializers.SerializerMethodField()
+
     class Meta:
         model = Profiles
         fields = "__all__"
+
+    def get_card(self, obj):
+        return profile_to_card(obj)

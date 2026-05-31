@@ -61,6 +61,33 @@ class MatchesView(APIView):
         return Response({"matches": SearchService.get_matches_for_user(int(user_id))})
 
 
+class MessagesView(APIView):
+    """Переписка внутри матча."""
+
+    def get(self, request):
+        match_id = request.query_params.get("match_id")
+        user_id = request.query_params.get("user_id")
+        if not match_id or not user_id:
+            return Response(
+                {"detail": "match_id and user_id required"}, status=400
+            )
+        data = SearchService.get_messages(int(match_id), int(user_id))
+        if isinstance(data, dict) and not data.get("ok", True):
+            return Response(data, status=400)
+        return Response({"messages": data})
+
+    def post(self, request):
+        data = request.data
+        result = SearchService.perform_action(
+            int(data["from_user_id"]),
+            int(data["to_user_id"]),
+            "message",
+            text=data.get("text", ""),
+        )
+        code = status.HTTP_200_OK if result.get("ok") else status.HTTP_400_BAD_REQUEST
+        return Response(result, status=code)
+
+
 def _int_or_none(value):
     if value is None or value == "":
         return None

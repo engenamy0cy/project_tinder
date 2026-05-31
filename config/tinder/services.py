@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 
 from profiles.models import Profiles
+from profiles.profile_payload import profile_to_card
 from tinder.models import Match, Message, Swipe
 from users.services import UserStatusService
 
@@ -74,33 +75,18 @@ class SearchService:
 
         cards = []
         for profile in qs[:limit]:
-            cards.append(SearchService._profile_card(profile))
+            card = profile_to_card(profile)
+            card["actions"] = SearchService._default_actions()
+            cards.append(card)
         return cards
 
     @staticmethod
-    def _profile_card(profile: Profiles) -> dict[str, Any]:
-        user = profile.user
-        name = str(profile)
-        return {
-            "user_id": user.id,
-            "username": user.username,
-            "display_name": name,
-            "game": profile.main_game.game if profile.main_game else None,
-            "game_label": (
-                profile.main_game.get_game_display() if profile.main_game else None
-            ),
-            "age": profile.age.age if profile.age else None,
-            "gender": profile.gender.gender if profile.gender else None,
-            "hours_in_game": (
-                profile.hours_in_game.hours if profile.hours_in_game else None
-            ),
-            "status": UserStatusService.get_status_payload(user),
-            "actions": [
-                {"id": "yes", "label": "Да"},
-                {"id": "no", "label": "Нет"},
-                {"id": "message", "label": "Сообщение"},
-            ],
-        }
+    def _default_actions() -> list[dict[str, str]]:
+        return [
+            {"id": "yes", "label": "Да"},
+            {"id": "no", "label": "Нет"},
+            {"id": "message", "label": "Сообщение"},
+        ]
 
     @staticmethod
     def perform_action(
@@ -188,12 +174,53 @@ class SearchService:
         result = []
         for m in matches:
             other = m.user_b if m.user_a_id == user_id else m.user_a
+            other_profile = (
+                Profiles.objects.filter(user_id=other.id)
+                .select_related("main_game", "first_name", "last_name", "avatar")
+                .prefetch_related("games")
+                .first()
+            )
+            preview = (
+                profile_to_card(other_profile)
+                if other_profile
+                else {
+                    "user_id": other.id,
+                    "username": other.username,
+                    "display_name": other.username,
+                }
+            )
+            last_msg = (
+                Message.objects.filter(match_id=m.id).order_by("-created_at").first()
+            )
             result.append(
                 {
                     "match_id": m.id,
                     "user_id": other.id,
                     "username": other.username,
+                    "display_name": preview.get("display_name", other.username),
+                    "game_label": preview.get("game_label"),
+                    "avatar_url": preview.get("avatar_url"),
                     "created_at": m.created_at.isoformat(),
+                    "last_message": last_msg.text if last_msg else None,
                 }
             )
         return result
+
+    @staticmethod
+    def get_messages(match_id: int, user_id: int) -> list[dict[str, Any]] | dict:
+        match = Match.objects.filter(pk=match_id).first()
+        if not match:
+            return {"ok": False, "detail": "match not found"}
+        if user_id not in (match.user_a_id, match.user_b_id):
+            return {"ok": False, "detail": "not a participant"}
+        rows = Message.objects.filter(match_id=match_id).order_by("created_at")
+        return [
+            {
+                "id": msg.id,
+                "sender_id": msg.sender_id,
+                "text": msg.text,
+                "created_at": msg.created_at.isoformat(),
+                "mine": msg.sender_id == user_id,
+            }
+            for msg in rows
+        ]
