@@ -1,39 +1,48 @@
-import axios from "axios";
 import { useEffect, useState } from "react";
-import { Text, View, FlatList } from "react-native";
-import type { Profiles } from "@/types/profiles";
+import { ActivityIndicator, FlatList, View } from "react-native";
+
 import ProfilesCard from "@/components/ProfilesCard";
+import { ThemedText } from "@/components/themed-text";
+import { useUser } from "@/contexts/UserContext";
+import { fetchFeed } from "@/lib/api";
+import { ACCENT } from "@/lib/config";
+import type { ProfileCard } from "@/types/api";
 
-const API_URL_PROFILES = "http://127.0.0.1:8000/profiles/profiles/"
+/** Список анкет из ленты поиска (для отладки). */
 const ProfilesList = () => {
-    const [profiles, setProfiles] = useState<Profiles[]>([]);
+  const { userId } = useUser();
+  const [profiles, setProfiles] = useState<ProfileCard[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    const getProfiles = async () => {
-        try {
-            const response = await axios.get<Profiles[]>(API_URL_PROFILES);
-            console.log(response)
-            setProfiles(response.data);
-        } catch (error) {
-            console.error("Ошибка загрузки профилей:", error);
-        }
-    };
+  useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+    fetchFeed(userId)
+      .then(setProfiles)
+      .catch(() => setProfiles([]))
+      .finally(() => setLoading(false));
+  }, [userId]);
 
-    useEffect(() => {
-        getProfiles();
-    }, []);
+  if (!userId) {
+    return <ThemedText>Войдите в аккаунт</ThemedText>;
+  }
 
-    return (
-        <View>
-            <Text>Профиля</Text>
-            <FlatList
-                data={profiles}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                    <ProfilesCard profiles={item} />
-                )}
-            />
-        </View>
-    );
+  if (loading) {
+    return <ActivityIndicator color={ACCENT} />;
+  }
+
+  return (
+    <View>
+      <ThemedText type="subtitle">Лента</ThemedText>
+      <FlatList
+        data={profiles}
+        keyExtractor={(item) => String(item.user_id)}
+        renderItem={({ item }) => <ProfilesCard profiles={item} />}
+      />
+    </View>
+  );
 };
 
 export default ProfilesList;
