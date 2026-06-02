@@ -67,16 +67,20 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         const data = await apiRegister(payload);
         setUser(data.user);
         setProfile(data.profile);
-      } catch (e: unknown) {
-        const msg = axiosDetail(e) ?? "Не удалось зарегистрироваться.";
-        setError(msg);
-        throw e;
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
+    } catch (e: any) {
+      console.log("STATUS:", e.response?.status);
+      console.log("DATA:", e.response?.data);
+      console.log("URL:", e.config?.url);
+
+      const msg = axiosDetail(e) ?? "Не удалось зарегистрироваться.";
+      setError(msg);
+      throw e;
+    } finally {
+      setLoading(false);
+    }
+  },
+  []
+);
 
   const signOut = useCallback(() => {
     setUser(null);
@@ -112,6 +116,8 @@ function axiosDetail(e: unknown): string | null {
   if (typeof e === "object" && e !== null && "response" in e) {
     const res = (e as { response?: { data?: { detail?: string } } }).response;
     if (res?.data?.detail) return String(res.data.detail);
+    
   }
   return null;
 }
+
