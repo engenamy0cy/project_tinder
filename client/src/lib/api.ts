@@ -1,5 +1,4 @@
 import axios from "axios";
-
 import { API_BASE_URL } from "@/lib/config";
 import type {
   ChatMessage,
@@ -49,7 +48,7 @@ export async function fetchFeed(
   game?: string
 ): Promise<ProfileCard[]> {
   const { data } = await client.get<{ results: ProfileCard[]; count: number }>(
-    "/tinder/search/",
+    "/profiles/profiles/feed/",
     { params: { user_id: userId, game } }
   );
   return data.results;

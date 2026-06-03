@@ -43,9 +43,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       const data = await apiLogin(username, password);
       setUser(data.user);
       setProfile(data.profile);
-    } catch (e: unknown) {
-      const msg =
-        axiosDetail(e) ?? "Не удалось войти. Проверьте сервер и логин.";
+    } catch (e: any) {
+      const msg = axiosDetail(e) ?? "Login failed. Check server and credentials.";
       setError(msg);
       throw e;
     } finally {
@@ -67,20 +66,16 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         const data = await apiRegister(payload);
         setUser(data.user);
         setProfile(data.profile);
-    } catch (e: any) {
-      console.log("STATUS:", e.response?.status);
-      console.log("DATA:", e.response?.data);
-      console.log("URL:", e.config?.url);
-
-      const msg = axiosDetail(e) ?? "Не удалось зарегистрироваться.";
-      setError(msg);
-      throw e;
-    } finally {
-      setLoading(false);
-    }
-  },
-  []
-);
+      } catch (e: any) {
+        const msg = axiosDetail(e) ?? "Registration failed.";
+        setError(msg);
+        throw e;
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
   const signOut = useCallback(() => {
     setUser(null);
@@ -112,12 +107,14 @@ export function useUser() {
   return ctx;
 }
 
-function axiosDetail(e: unknown): string | null {
-  if (typeof e === "object" && e !== null && "response" in e) {
-    const res = (e as { response?: { data?: { detail?: string } } }).response;
-    if (res?.data?.detail) return String(res.data.detail);
-    
+function axiosDetail(e: any): string | null {
+  if (e?.response?.data) {
+    const data = e.response.data;
+    if (data.detail) return String(data.detail);
+    if (typeof data === "object") {
+      const firstError = Object.values(data)[0];
+      if (Array.isArray(firstError)) return String(firstError[0]);
+    }
   }
   return null;
 }
-

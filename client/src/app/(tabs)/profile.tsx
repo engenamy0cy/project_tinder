@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TextInput,
   View,
+  ScrollView,
 } from "react-native";
 
 import { ProfileEditor } from "@/components/ProfileEditor";
@@ -13,8 +14,10 @@ import { ThemedText } from "@/components/themed-text";
 import { useUser } from "@/contexts/UserContext";
 import { fetchMyProfile } from "@/lib/api";
 import { ACCENT, GAMES } from "@/lib/config";
+import { useTheme } from "@/hooks/use-theme";
 
 export default function ProfileScreen() {
+  const theme = useTheme();
   const {
     user,
     profile,
@@ -38,17 +41,19 @@ export default function ProfileScreen() {
 
   const onAuth = async () => {
     clearError();
-    if (mode === "login") {
-      await signIn(username.trim(), password);
-    } else {
-      await signUp({
-        username: username.trim(),
-        email: email.trim(),
-        password,
-        first_name: displayName.trim() || undefined,
-        game,
-      });
-    }
+    try {
+        if (mode === "login") {
+            await signIn(username.trim(), password);
+        } else {
+            await signUp({
+                username: username.trim(),
+                email: email.trim(),
+                password,
+                first_name: displayName.trim() || undefined,
+                game,
+            });
+        }
+    } catch(e) {}
     setPassword("");
   };
 
@@ -57,103 +62,101 @@ export default function ProfileScreen() {
     setLoadingProfile(true);
     try {
       setProfile(await fetchMyProfile(userId));
-    } catch {
-      /* профиль может быть пустым */
-    } finally {
+    } catch {} finally {
       setLoadingProfile(false);
     }
   };
 
   if (!userId) {
     return (
-      <Screen>
-        <ThemedText type="subtitle" style={styles.title}>
-          {mode === "login" ? "Вход" : "Регистрация"}
-        </ThemedText>
-        <ThemedText themeColor="textSecondary" style={styles.sub}>
-          Поиск тиммейтов для Dota 2, CS2 и Majestic
-        </ThemedText>
-
-        <AuthField label="Логин" value={username} onChangeText={setUsername} />
-        {mode === "register" && (
-          <>
-            <AuthField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" />
-            <AuthField label="Имя в игре" value={displayName} onChangeText={setDisplayName} />
-            <ThemedText type="smallBold" style={styles.gameLabel}>
-              Игра по умолчанию
+      <Screen style={styles.authContainer}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+            <ThemedText type="title" style={styles.title}>
+            {mode === "login" ? "Welcome back" : "Create account"}
             </ThemedText>
-            <View style={styles.gameRow}>
-              {GAMES.map((g) => (
+
+            <View style={styles.form}>
+                <AuthField label="Username" value={username} onChangeText={setUsername} />
+                {mode === "register" && (
+                <>
+                    <AuthField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" />
+                    <AuthField label="In-game Name" value={displayName} onChangeText={setDisplayName} />
+                    <ThemedText type="smallBold" style={styles.gameLabel}>Main Game</ThemedText>
+                    <View style={styles.gameRow}>
+                    {GAMES.map((g) => (
+                        <Pressable
+                        key={g.code}
+                        onPress={() => setGame(g.code)}
+                        style={[styles.gameChip, game === g.code && styles.gameChipActive]}>
+                        <ThemedText style={[styles.gameChipText, game === g.code && styles.chipActiveText]}>
+                            {g.label}
+                        </ThemedText>
+                        </Pressable>
+                    ))}
+                    </View>
+                </>
+                )}
+                <AuthField
+                    label="Password"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                />
+
+                {error ? <ThemedText style={styles.error}>{error}</ThemedText> : null}
+
                 <Pressable
-                  key={g.code}
-                  onPress={() => setGame(g.code)}
-                  style={[styles.gameChip, game === g.code && styles.gameChipActive]}>
-                  <ThemedText style={game === g.code ? styles.chipActiveText : undefined}>
-                    {g.label}
-                  </ThemedText>
+                style={[styles.primaryBtn, loading && styles.disabled]}
+                onPress={onAuth}
+                disabled={loading}>
+                {loading ? (
+                    <ActivityIndicator color="#fff" />
+                ) : (
+                    <ThemedText style={styles.primaryText}>
+                    {mode === "login" ? "Sign In" : "Sign Up"}
+                    </ThemedText>
+                )}
                 </Pressable>
-              ))}
+
+                <Pressable onPress={() => {
+                    setMode(mode === "login" ? "register" : "login");
+                    clearError();
+                }}>
+                <ThemedText style={styles.switch}>
+                    {mode === "login" ? "Don't have an account? Register" : "Already have an account? Login"}
+                </ThemedText>
+                </Pressable>
             </View>
-          </>
-        )}
-        <AuthField
-          label="Пароль"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-
-        {error ? <ThemedText style={styles.error}>{error}</ThemedText> : null}
-
-        <Pressable
-          style={[styles.primaryBtn, loading && styles.disabled]}
-          onPress={onAuth}
-          disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <ThemedText style={styles.primaryText}>
-              {mode === "login" ? "Войти" : "Создать аккаунт"}
-            </ThemedText>
-          )}
-        </Pressable>
-
-        <Pressable onPress={() => setMode(mode === "login" ? "register" : "login")}>
-          <ThemedText type="linkPrimary" style={styles.switch}>
-            {mode === "login" ? "Нет аккаунта? Зарегистрироваться" : "Уже есть аккаунт? Войти"}
-          </ThemedText>
-        </Pressable>
+        </ScrollView>
       </Screen>
     );
   }
 
   return (
-    <Screen>
-      <View style={styles.headerRow}>
+    <Screen padded={false}>
+      <View style={styles.header}>
         <View>
-          <ThemedText type="subtitle">{user?.username}</ThemedText>
+          <ThemedText type="subtitle" style={styles.username}>{user?.username}</ThemedText>
           <ThemedText themeColor="textSecondary">{user?.email}</ThemedText>
         </View>
-        <Pressable onPress={signOut}>
-          <ThemedText type="linkPrimary">Выйти</ThemedText>
+        <Pressable onPress={signOut} style={styles.logoutBtn}>
+          <ThemedText style={styles.logoutText}>Logout</ThemedText>
         </Pressable>
       </View>
 
-      {loadingProfile ? (
-        <ActivityIndicator color={ACCENT} style={{ marginTop: 24 }} />
-      ) : (
-        <ProfileEditor
-          userId={userId}
-          initial={profile}
-          onSaved={(p) => {
-            setProfile(p);
-          }}
-        />
-      )}
-
-      <Pressable onPress={reloadProfile} style={styles.refresh}>
-        <ThemedText type="linkPrimary">Обновить с сервера</ThemedText>
-      </Pressable>
+      <View style={styles.editorContainer}>
+        {loadingProfile ? (
+            <ActivityIndicator color={ACCENT} size="large" style={{ marginTop: 40 }} />
+        ) : (
+            <ProfileEditor
+            userId={userId}
+            initial={profile}
+            onSaved={(p) => {
+                setProfile(p);
+            }}
+            />
+        )}
+      </View>
     </Screen>
   );
 }
@@ -171,92 +174,137 @@ function AuthField({
   secureTextEntry?: boolean;
   autoCapitalize?: "none" | "sentences";
 }) {
+  const theme = useTheme();
   return (
     <View style={styles.field}>
-      <ThemedText type="smallBold">{label}</ThemedText>
+      <ThemedText type="smallBold" style={styles.label}>{label}</ThemedText>
       <TextInput
         value={value}
         onChangeText={onChangeText}
         secureTextEntry={secureTextEntry}
         autoCapitalize={autoCapitalize}
-        style={styles.authInput}
+        style={[styles.authInput, { color: theme.text, backgroundColor: theme.backgroundElement }]}
+        placeholderTextColor={theme.textSecondary}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  title: {
-    fontSize: 28,
-    marginBottom: 4,
+  authContainer: {
+    paddingHorizontal: 24,
   },
-  sub: {
-    marginBottom: 20,
+  scrollContent: {
+    paddingTop: 60,
+    paddingBottom: 40,
+  },
+  title: {
+    fontSize: 36,
+    fontWeight: "900",
+    marginBottom: 32,
+    color: ACCENT,
+  },
+  form: {
+    gap: 16,
   },
   field: {
-    marginBottom: 14,
-    gap: 6,
+    gap: 8,
+  },
+  label: {
+    fontSize: 14,
+    color: "#666",
+    marginLeft: 4,
   },
   authInput: {
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 16,
-    backgroundColor: "#F0F0F3",
   },
   primaryBtn: {
     backgroundColor: ACCENT,
-    borderRadius: 14,
-    paddingVertical: 14,
+    borderRadius: 16,
+    paddingVertical: 16,
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 12,
+    shadowColor: ACCENT,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   primaryText: {
     color: "#fff",
     fontWeight: "700",
-    fontSize: 16,
+    fontSize: 18,
   },
   disabled: {
     opacity: 0.7,
   },
   switch: {
-    marginTop: 16,
+    marginTop: 20,
     textAlign: "center",
+    color: "#666",
+    fontSize: 14,
   },
   error: {
     color: ACCENT,
-    marginBottom: 8,
+    textAlign: "center",
+    fontWeight: "600",
   },
-  headerRow: {
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 16,
-  },
-  refresh: {
     alignItems: "center",
-    paddingVertical: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#eee",
+  },
+  username: {
+    fontSize: 24,
+    fontWeight: "800",
+  },
+  logoutBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: "#f5f5f5",
+  },
+  logoutText: {
+    color: "#666",
+    fontWeight: "600",
+  },
+  editorContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
   },
   gameLabel: {
-    marginBottom: 8,
+    fontSize: 14,
+    color: "#666",
+    marginLeft: 4,
+    marginBottom: 4,
   },
   gameRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginBottom: 12,
+    gap: 10,
+    marginBottom: 4,
   },
   gameChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderRadius: 12,
-    backgroundColor: "#F0F0F3",
+    backgroundColor: "#f0f0f0",
   },
   gameChipActive: {
     backgroundColor: ACCENT,
   },
+  gameChipText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#444",
+  },
   chipActiveText: {
     color: "#fff",
-    fontWeight: "700",
   },
 });

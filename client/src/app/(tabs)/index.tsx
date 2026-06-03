@@ -50,12 +50,12 @@ export default function DiscoverScreen() {
     try {
       const res = await swipe(userId, current.user_id, action);
       if (res.match) {
-        Alert.alert("Это матч!", `Вы понравились ${current.display_name}`);
+        Alert.alert("It's a Match!", `You matched with ${current.display_name}`);
       }
       advance();
       if (queue.length <= 1) load();
     } catch {
-      Alert.alert("Ошибка", "Не удалось отправить действие");
+      Alert.alert("Error", "Action failed");
     } finally {
       setActing(false);
     }
@@ -63,21 +63,24 @@ export default function DiscoverScreen() {
 
   if (!userId) {
     return (
-      <Screen>
-        <ThemedText type="subtitle">Войдите в профиле</ThemedText>
-        <ThemedText themeColor="textSecondary">
-          Чтобы смотреть анкеты, создайте аккаунт на вкладке «Профиль».
+      <Screen style={styles.authGate}>
+        <ThemedText type="title" style={styles.gateTitle}>TeamUp</ThemedText>
+        <ThemedText themeColor="textSecondary" style={styles.gateSub}>
+          Join the community to find your next squad.
         </ThemedText>
       </Screen>
     );
   }
 
   return (
-    <Screen>
-      <ThemedText type="subtitle" style={styles.title}>
-        TeamUp
-      </ThemedText>
-      <GameFilter value={game} onChange={setGame} />
+    <Screen padded={false}>
+      <View style={styles.header}>
+        <ThemedText type="title" style={styles.title}>TeamUp</ThemedText>
+      </View>
+
+      <View style={styles.filterContainer}>
+        <GameFilter value={game} onChange={setGame} />
+      </View>
 
       <View style={styles.deck}>
         {loading ? (
@@ -86,41 +89,73 @@ export default function DiscoverScreen() {
           <SwipeCard card={current} />
         ) : (
           <View style={styles.empty}>
-            <ThemedText type="subtitle">Анкеты закончились</ThemedText>
+            <ThemedText type="subtitle">No one left!</ThemedText>
             <ThemedText themeColor="textSecondary">
-              Смените фильтр или зайдите позже
+              Try changing filters or check back later.
             </ThemedText>
           </View>
         )}
       </View>
 
       {current ? (
-        <ActionButtons
-          onNo={() => onAction("no")}
-          onYes={() => onAction("yes")}
-          disabled={acting}
-        />
+        <View style={styles.actions}>
+          <ActionButtons
+            onNo={() => onAction("no")}
+            onYes={() => onAction("yes")}
+            disabled={acting}
+          />
+        </View>
       ) : null}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  authGate: {
+    justifyContent: "center",
+    alignItems: "center",
+    textAlign: "center",
+  },
+  gateTitle: {
+    fontSize: 42,
+    color: ACCENT,
+    marginBottom: 8,
+  },
+  gateSub: {
+    fontSize: 18,
+    textAlign: "center",
+    maxWidth: "80%",
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 5,
+  },
   title: {
-    fontSize: 28,
-    marginBottom: 4,
+    fontSize: 32,
+    fontWeight: "900",
+    color: ACCENT,
+  },
+  filterContainer: {
+    paddingHorizontal: 16,
+    marginBottom: 10,
   },
   deck: {
     flex: 1,
-    marginTop: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 20,
   },
   center: {
-    marginTop: 80,
+    flex: 1,
   },
   empty: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
+    gap: 12,
   },
+  actions: {
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+  }
 });
