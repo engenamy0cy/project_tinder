@@ -1,43 +1,31 @@
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 
-from .models import User
-
+User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
-    is_verified_flag = serializers.SerializerMethodField()
-    is_online_flag = serializers.SerializerMethodField()
-    last_activity_at = serializers.SerializerMethodField()
-
     class Meta:
         model = User
         fields = (
             "id",
             "username",
             "email",
-            "is_verified_flag",
-            "is_online_flag",
-            "last_activity_at",
+            "is_verified",
+            "is_online",
+            "last_activity",
         )
+        read_only_fields = ("is_verified", "is_online", "last_activity")
 
-    def get_is_verified_flag(self, obj):
-        return bool(obj.is_verified and obj.is_verified.is_verified)
+class UserRegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, min_length=6)
 
-    def get_is_online_flag(self, obj):
-        return bool(obj.is_online and obj.is_online.is_online)
+    class Meta:
+        model = User
+        fields = ("username", "email", "password", "first_name", "last_name")
 
-    def get_last_activity_at(self, obj):
-        if obj.last_activity and obj.last_activity.last_activity:
-            return obj.last_activity.last_activity.isoformat()
-        return None
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
 
-
-class UserRegisterSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
-    email = serializers.EmailField()
-    password = serializers.CharField(min_length=6, write_only=True)
-    first_name = serializers.CharField(required=False, allow_blank=True)
-    last_name = serializers.CharField(required=False, allow_blank=True)
-    game = serializers.ChoiceField(
-        choices=["dota2", "cs2", "majestic"], required=False
-    )
-    age = serializers.IntegerField(required=False, allow_null=True)
+class UserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
