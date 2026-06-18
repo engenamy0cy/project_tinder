@@ -95,7 +95,7 @@ export function ProfileEditor({ userId, initial, onSaved }: Props) {
         <Pressable onPress={pickImage} style={styles.avatarContainer}>
           {avatar || initial?.avatar_url ? (
             <Image
-              source={{ uri: avatar?.uri || mediaUrl(initial?.avatar_url)! }}
+              source={{ uri: avatar?.uri ?? mediaUrl(initial?.avatar_url) ?? "" }}
               style={styles.avatar}
             />
           ) : (

@@ -2,9 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Pressable,
   StyleSheet,
   View,
 } from "react-native";
+import { useRouter } from "expo-router";
 
 import { ActionButtons } from "@/components/ActionButtons";
 import { GameFilter } from "@/components/GameFilter";
@@ -17,6 +19,7 @@ import { ACCENT } from "@/lib/config";
 import type { ProfileCard } from "@/types/api";
 
 export default function DiscoverScreen() {
+  const router = useRouter();
   const { userId } = useUser();
   const [game, setGame] = useState<string | null>(null);
   const [queue, setQueue] = useState<ProfileCard[]>([]);
@@ -24,10 +27,9 @@ export default function DiscoverScreen() {
   const [acting, setActing] = useState(false);
 
   const load = useCallback(async () => {
-    if (!userId) return;
     setLoading(true);
     try {
-      const cards = await fetchFeed(userId, game ?? undefined);
+      const cards = await fetchFeed(userId ?? undefined, game ?? undefined);
       setQueue(cards);
     } catch {
       setQueue([]);
@@ -61,17 +63,6 @@ export default function DiscoverScreen() {
     }
   };
 
-  if (!userId) {
-    return (
-      <Screen style={styles.authGate}>
-        <ThemedText type="title" style={styles.gateTitle}>TeamUp</ThemedText>
-        <ThemedText themeColor="textSecondary" style={styles.gateSub}>
-          Join the community to find your next squad.
-        </ThemedText>
-      </Screen>
-    );
-  }
-
   return (
     <Screen padded={false}>
       <View style={styles.header}>
@@ -97,7 +88,7 @@ export default function DiscoverScreen() {
         )}
       </View>
 
-      {current ? (
+      {userId && current ? (
         <View style={styles.actions}>
           <ActionButtons
             onNo={() => onAction("no")}
@@ -105,27 +96,18 @@ export default function DiscoverScreen() {
             disabled={acting}
           />
         </View>
+      ) : !userId ? (
+        <Pressable onPress={() => router.navigate("/(tabs)/profile")} style={styles.authPrompt}>
+          <ThemedText style={styles.authPromptText}>
+            Sign in to like and match with players
+          </ThemedText>
+        </Pressable>
       ) : null}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  authGate: {
-    justifyContent: "center",
-    alignItems: "center",
-    textAlign: "center",
-  },
-  gateTitle: {
-    fontSize: 42,
-    color: ACCENT,
-    marginBottom: 8,
-  },
-  gateSub: {
-    fontSize: 18,
-    textAlign: "center",
-    maxWidth: "80%",
-  },
   header: {
     paddingHorizontal: 20,
     paddingTop: 10,
@@ -157,5 +139,16 @@ const styles = StyleSheet.create({
   actions: {
     paddingBottom: 30,
     paddingHorizontal: 20,
-  }
+  },
+  authPrompt: {
+    paddingBottom: 30,
+    paddingHorizontal: 20,
+    alignItems: "center",
+  },
+  authPromptText: {
+    color: ACCENT,
+    fontWeight: "700",
+    fontSize: 16,
+    textDecorationLine: "underline",
+  },
 });

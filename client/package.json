@@ -42,6 +42,10 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
+    "build:web": "expo export --platform web",
+    "build:android": "eas build -p android --profile preview",
+    "build:ios": "eas build -p ios",
+    "prebuild": "expo prebuild",
     "lint": "expo lint"
   },
   "private": true

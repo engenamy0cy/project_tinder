@@ -44,12 +44,15 @@ export async function register(payload: {
 }
 
 export async function fetchFeed(
-  userId: number,
+  userId?: number,
   game?: string
 ): Promise<ProfileCard[]> {
+  const params: Record<string, string> = {};
+  if (userId) params.user_id = String(userId);
+  if (game) params.game = game;
   const { data } = await client.get<{ results: ProfileCard[]; count: number }>(
     "/profiles/profiles/feed/",
-    { params: { user_id: userId, game } }
+    { params }
   );
   return data.results;
 }

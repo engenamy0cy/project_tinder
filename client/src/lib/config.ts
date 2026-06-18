@@ -2,11 +2,11 @@ import { Platform } from "react-native";
 
 /** Базовый URL Django API. Для Android-эмулятора — 10.0.2.2 вместо localhost. */
 const host = Platform.select({
-  android: "10.0.2.2",
-  default: "127.0.0.1",
+  android: "159.194.210.64",
+  default: "159.194.210.64",
 });
 
-export const API_BASE_URL = `http://${host}:8000`;
+export const API_BASE_URL = `http://159.194.210.64`;
 
 export const GAMES = [
   { code: "dota2", label: "Dota 2" },
