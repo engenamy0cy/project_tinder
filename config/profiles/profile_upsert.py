@@ -15,17 +15,16 @@ def upsert_profile(user_id: int, data: dict[str, Any]) -> dict[str, Any]:
     user = User.objects.get(pk=user_id)
     profile, _ = Profiles.objects.get_or_create(user=user)
 
-    # Simple fields
-    for field in ["first_name", "last_name", "bio", "age", "hours_in_game", "gender", "city", "country", "avatar"]:
+    avatar_base64 = data.pop("avatar_base64", None)
+
+    for field in ["first_name", "last_name", "bio", "age", "hours_in_game", "gender", "city", "country"]:
         if field in data:
             setattr(profile, field, data[field])
 
-    # Main game
     if "game" in data and data["game"]:
         game_obj, _ = Game.objects.get_or_create(game=data["game"])
         profile.main_game = game_obj
 
-    # Extra games
     if "extra_games" in data:
         game_objs = []
         for code in data["extra_games"]:
@@ -33,9 +32,11 @@ def upsert_profile(user_id: int, data: dict[str, Any]) -> dict[str, Any]:
             game_objs.append(g)
         profile.games.set(game_objs)
 
+    if avatar_base64:
+        profile.avatar_data = avatar_base64
+
     profile.save()
 
-    # Re-fetch with optimization
     profile = (
         Profiles.objects.filter(user_id=user_id)
         .select_related("user", "main_game")

@@ -88,6 +88,28 @@ class MessagesView(APIView):
         return Response(result, status=code)
 
 
+class LikesSentView(APIView):
+    """Исходящие лайки (кого лайкнул)."""
+
+    def get(self, request):
+        user_id = request.query_params.get("user_id")
+        if not user_id:
+            return Response({"detail": "user_id required"}, status=400)
+        likes = SearchService.get_likes_sent_for_user(int(user_id))
+        return Response({"likes": likes, "count": len(likes)})
+
+
+class LikesReceivedView(APIView):
+    """Входящие лайки (кто лайкнул тебя)."""
+
+    def get(self, request):
+        user_id = request.query_params.get("user_id")
+        if not user_id:
+            return Response({"detail": "user_id required"}, status=400)
+        likes = SearchService.get_likes_received_for_user(int(user_id))
+        return Response({"likes": likes, "count": len(likes)})
+
+
 def _int_or_none(value):
     if value is None or value == "":
         return None

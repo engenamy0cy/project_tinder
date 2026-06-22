@@ -7,8 +7,14 @@ class Game(models.Model):
         ("dota2", "Dota 2"),
         ("cs2", "CS2"),
         ("majestic", "Majestic"),
+        ("minecraft", "Minecraft"),
+        ("roblox", "Roblox"),
+        ("pubg", "PUBG"),
+        ("brawl_stars", "Brawl Stars"),
+        ("clash_royale", "Clash Royale"),
+        ("palworld", "Palworld"),
     ]
-    game = models.CharField(max_length=20, choices=GAME_CHOICES, unique=True)
+    game = models.CharField(max_length=30, choices=GAME_CHOICES, unique=True)
 
     def __str__(self):
         return self.get_game_display()
@@ -41,6 +47,7 @@ class Profiles(models.Model):
     city = models.CharField(max_length=100, blank=True, verbose_name="Город")
     country = models.CharField(max_length=100, blank=True, verbose_name="Страна")
     avatar = models.ImageField(upload_to="profile_photos/", blank=True, null=True, verbose_name="Аватар")
+    avatar_data = models.TextField(blank=True, verbose_name="Аватар base64")
 
     main_game = models.ForeignKey(
         Game,

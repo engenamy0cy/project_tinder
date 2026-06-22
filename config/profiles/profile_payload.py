@@ -1,15 +1,6 @@
-"""Единый JSON-профиль для API (согласован с мобильным клиентом)."""
-
 from __future__ import annotations
 from typing import Any
-from django.conf import settings
 from profiles.models import Game, Profiles
-
-def _media_url(path: str | None) -> str | None:
-    if not path:
-        return None
-    base = settings.MEDIA_URL.rstrip("/")
-    return f"{base}/{path.lstrip('/')}"
 
 def profile_to_card(profile: Profiles) -> dict[str, Any]:
     """Плоское представление профиля для списков, ленты и карточек."""
@@ -28,19 +19,14 @@ def profile_to_card(profile: Profiles) -> dict[str, Any]:
             games_list.append({"code": g.game, "label": g.get_game_display()})
             seen.add(g.game)
 
-    avatar_path = None
-    if profile.avatar:
-        avatar_path = profile.avatar.name
+    avatar_url = None
+    if profile.avatar_data:
+        avatar_url = f"/profiles/avatar/{user.id}/"
 
-    # Check if UserStatusService exists, otherwise provide a fallback
-    try:
-        from users.services import UserStatusService
-        status_payload = UserStatusService.get_status_payload(user)
-    except (ImportError, AttributeError):
-        status_payload = {
-            "is_online": getattr(user, "is_online", False),
-            "last_activity": getattr(user, "last_activity", None),
-        }
+    status_payload = {
+        "is_online": getattr(user, "is_online", False),
+        "last_activity": getattr(user, "last_activity", None),
+    }
 
     return {
         "user_id": user.id,
@@ -60,7 +46,7 @@ def profile_to_card(profile: Profiles) -> dict[str, Any]:
             profile.main_game.get_game_display() if profile.main_game else None
         ),
         "games": games_list,
-        "avatar_url": _media_url(avatar_path),
+        "avatar_url": avatar_url,
         "status": status_payload,
     }
 

@@ -200,6 +200,64 @@ class SearchService:
         return result
 
     @staticmethod
+    def get_likes_sent_for_user(user_id: int) -> list[dict[str, Any]]:
+        liked_ids = Swipe.objects.filter(
+            from_user_id=user_id, is_like=True
+        ).values_list("to_user_id", flat=True)
+
+        profiles = (
+            Profiles.objects.filter(user_id__in=liked_ids)
+            .select_related("user", "main_game")
+            .prefetch_related("games")
+        )
+
+        result = []
+        for p in profiles:
+            card = profile_to_card(p)
+            result.append({
+                "user_id": p.user_id,
+                "username": p.user.username,
+                "display_name": card.get("display_name", p.user.username),
+                "game_label": card.get("game_label"),
+                "avatar_url": card.get("avatar_url"),
+            })
+        return result
+
+    @staticmethod
+    def get_likes_received_for_user(user_id: int) -> list[dict[str, Any]]:
+        liked_user_ids = Swipe.objects.filter(
+            to_user_id=user_id, is_like=True
+        ).values_list("from_user_id", flat=True)
+
+        already_matched = Match.objects.filter(
+            Q(user_a_id=user_id) | Q(user_b_id=user_id)
+        ).values_list("user_a_id", "user_b_id")
+        matched_ids = set()
+        for a, b in already_matched:
+            matched_ids.add(a)
+            matched_ids.add(b)
+
+        incoming_ids = [uid for uid in liked_user_ids if uid not in matched_ids]
+
+        profiles = (
+            Profiles.objects.filter(user_id__in=incoming_ids)
+            .select_related("user", "main_game")
+            .prefetch_related("games")
+        )
+
+        result = []
+        for p in profiles:
+            card = profile_to_card(p)
+            result.append({
+                "user_id": p.user_id,
+                "username": p.user.username,
+                "display_name": card.get("display_name", p.user.username),
+                "game_label": card.get("game_label"),
+                "avatar_url": card.get("avatar_url"),
+            })
+        return result
+
+    @staticmethod
     def get_messages(match_id: int, user_id: int) -> list[dict[str, Any]] | dict:
         match = Match.objects.filter(pk=match_id).first()
         if not match:
