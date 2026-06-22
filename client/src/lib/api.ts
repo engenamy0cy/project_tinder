@@ -1,4 +1,5 @@
 import axios from "axios";
+import * as FileSystem from "expo-file-system";
 import { API_BASE_URL } from "@/lib/config";
 import type {
   ChatMessage,
@@ -47,9 +48,8 @@ export async function fetchFeed(
   userId?: number,
   game?: string
 ): Promise<ProfileCard[]> {
-  const params: Record<string, string> = {};
-  if (userId) params.user_id = String(userId);
-  if (game) params.game = game;
+  const params: any = { game };
+  if (userId) params.user_id = userId;
   const { data } = await client.get<{ results: ProfileCard[]; count: number }>(
     "/profiles/profiles/feed/",
     { params }
@@ -90,6 +90,20 @@ export async function fetchMatches(userId: number): Promise<MatchItem[]> {
   return data.matches;
 }
 
+export async function fetchIncomingLikes(userId: number): Promise<MatchItem[]> {
+  const { data } = await client.get<{ likes: MatchItem[] }>("/teampick/likes/received/", {
+    params: { user_id: userId },
+  });
+  return data.likes;
+}
+
+export async function fetchLikes(userId: number): Promise<MatchItem[]> {
+  const { data } = await client.get<{ likes: MatchItem[] }>("/teampick/likes/", {
+    params: { user_id: userId },
+  });
+  return data.likes;
+}
+
 export async function fetchMessages(
   matchId: number,
   userId: number
@@ -112,36 +126,31 @@ export async function saveProfile(
   userId: number,
   payload: ProfileWritePayload
 ): Promise<ProfileCard> {
-  const formData = new FormData();
-  formData.append("user_id", String(userId));
+  const body: Record<string, any> = { user_id: userId };
 
-  Object.entries(payload).forEach(([key, value]) => {
-    if (value === null || value === undefined) return;
-
+  for (const [key, value] of Object.entries(payload)) {
+    if (value === null || value === undefined) continue;
     if (key === "avatar" && typeof value === "object" && (value as any).uri) {
-      const avatar = value as any;
-      const filename = avatar.uri.split("/").pop();
-      const match = /\.(\w+)$/.exec(filename);
-      const type = match ? `image/${match[1]}` : `image`;
-
-      formData.append("avatar", {
-        uri: avatar.uri,
-        name: filename,
-        type,
-      } as any);
+      const uri = (value as any).uri;
+      try {
+        body.avatar_base64 = await FileSystem.readAsStringAsync(uri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        const ext = uri.split(".").pop()?.toLowerCase() || "png";
+        body.avatar_base64 = `image/${ext};base64,${body.avatar_base64}`;
+      } catch {
+        body.avatar_base64 = null;
+      }
     } else if (Array.isArray(value)) {
-       value.forEach(v => formData.append(key, v));
+      body[key] = value;
     } else {
-      formData.append(key, String(value));
+      body[key] = value;
     }
-  });
+  }
 
   const { data } = await client.post<ProfileCard>(
     "/profiles/profiles/save/",
-    formData,
-    {
-      headers: { "Content-Type": "multipart/form-data" },
-    }
+    body
   );
   return data;
 }

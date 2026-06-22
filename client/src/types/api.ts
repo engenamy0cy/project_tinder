@@ -40,7 +40,7 @@ export type UserDto = {
 };
 
 export type MatchItem = {
-  match_id: number;
+  match_id?: number;
   user_id: number;
   username: string;
   display_name: string;

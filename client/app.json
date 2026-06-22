@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "client",
-    "slug": "client",
+    "name": "TeamUp",
+    "slug": "teamup",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "client",
+    "scheme": "teamup",
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon"
@@ -18,7 +18,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.client"
+      "package": "com.anonymous.teamup"
     },
     "web": {
       "output": "static",
@@ -29,7 +29,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#1A1A1E",
           "android": {
             "image": "./assets/images/splash-icon.png",
             "imageWidth": 76
@@ -44,8 +44,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "a98e5c3b-3dc7-42b7-ac61-5e2683dffa1c"
+        "projectId": "a236ecac-cc1b-4706-8fdc-9e80b641952e"
       }
-    }
+    },
+    "owner": "malevolence"
   }
 }

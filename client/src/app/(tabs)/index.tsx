@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  StyleSheet,
-  View,
-} from "react-native";
-import { useRouter } from "expo-router";
+import { ActivityIndicator, Alert, StyleSheet, View } from "react-native";
+import { router } from "expo-router";
 
 import { ActionButtons } from "@/components/ActionButtons";
 import { GameFilter } from "@/components/GameFilter";
@@ -19,7 +13,6 @@ import { ACCENT } from "@/lib/config";
 import type { ProfileCard } from "@/types/api";
 
 export default function DiscoverScreen() {
-  const router = useRouter();
   const { userId } = useUser();
   const [game, setGame] = useState<string | null>(null);
   const [queue, setQueue] = useState<ProfileCard[]>([]);
@@ -31,124 +24,67 @@ export default function DiscoverScreen() {
     try {
       const cards = await fetchFeed(userId ?? undefined, game ?? undefined);
       setQueue(cards);
-    } catch {
-      setQueue([]);
-    } finally {
-      setLoading(false);
-    }
+    } catch { setQueue([]); } finally { setLoading(false); }
   }, [userId, game]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   const current = queue[0];
-
   const advance = () => setQueue((q) => q.slice(1));
 
   const onAction = async (action: "yes" | "no") => {
-    if (!userId || !current || acting) return;
+    if (!userId) { router.push("/(tabs)/profile"); return; }
+    if (!current || acting) return;
     setActing(true);
     try {
       const res = await swipe(userId, current.user_id, action);
-      if (res.match) {
-        Alert.alert("It's a Match!", `You matched with ${current.display_name}`);
-      }
+      if (res.match) Alert.alert("Это мэтч!", `Ты и ${current.display_name} понравились друг другу`);
       advance();
       if (queue.length <= 1) load();
-    } catch {
-      Alert.alert("Error", "Action failed");
-    } finally {
-      setActing(false);
-    }
+    } catch { Alert.alert("Ошибка", "Не удалось выполнить действие"); } finally { setActing(false); }
   };
 
   return (
     <Screen padded={false}>
       <View style={styles.header}>
-        <ThemedText type="title" style={styles.title}>TeamUp</ThemedText>
+        <ThemedText style={styles.title}>TeamUp</ThemedText>
+        {!userId && <ThemedText style={styles.guestHint}>Войди в профиль, чтобы лайкать</ThemedText>}
       </View>
 
-      <View style={styles.filterContainer}>
+      <View style={styles.filterWrap}>
         <GameFilter value={game} onChange={setGame} />
       </View>
 
       <View style={styles.deck}>
         {loading ? (
-          <ActivityIndicator size="large" color={ACCENT} style={styles.center} />
+          <ActivityIndicator size="large" color={ACCENT} style={{ flex: 1 }} />
         ) : current ? (
           <SwipeCard card={current} />
         ) : (
           <View style={styles.empty}>
-            <ThemedText type="subtitle">No one left!</ThemedText>
-            <ThemedText themeColor="textSecondary">
-              Try changing filters or check back later.
-            </ThemedText>
+            <ThemedText style={styles.emptyTitle}>Больше никого нет</ThemedText>
+            <ThemedText style={styles.emptyHint}>Попробуй другие фильтры или зайди позже</ThemedText>
           </View>
         )}
       </View>
 
-      {userId && current ? (
+      {current && (
         <View style={styles.actions}>
-          <ActionButtons
-            onNo={() => onAction("no")}
-            onYes={() => onAction("yes")}
-            disabled={acting}
-          />
+          <ActionButtons onNo={() => onAction("no")} onYes={() => onAction("yes")} disabled={acting} />
         </View>
-      ) : !userId ? (
-        <Pressable onPress={() => router.navigate("/(tabs)/profile")} style={styles.authPrompt}>
-          <ThemedText style={styles.authPromptText}>
-            Sign in to like and match with players
-          </ThemedText>
-        </Pressable>
-      ) : null}
+      )}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 5,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "900",
-    color: ACCENT,
-  },
-  filterContainer: {
-    paddingHorizontal: 16,
-    marginBottom: 10,
-  },
-  deck: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingBottom: 20,
-  },
-  center: {
-    flex: 1,
-  },
-  empty: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-  },
-  actions: {
-    paddingBottom: 30,
-    paddingHorizontal: 20,
-  },
-  authPrompt: {
-    paddingBottom: 30,
-    paddingHorizontal: 20,
-    alignItems: "center",
-  },
-  authPromptText: {
-    color: ACCENT,
-    fontWeight: "700",
-    fontSize: 16,
-    textDecorationLine: "underline",
-  },
+  header: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 4 },
+  title: { fontSize: 32, fontWeight: "900", color: ACCENT },
+  guestHint: { fontSize: 13, opacity: 0.5, marginTop: 2 },
+  filterWrap: { paddingHorizontal: 16, marginBottom: 8 },
+  deck: { flex: 1, paddingHorizontal: 16, paddingBottom: 16 },
+  empty: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
+  emptyTitle: { fontSize: 18, fontWeight: "700", opacity: 0.6 },
+  emptyHint: { fontSize: 14, opacity: 0.4 },
+  actions: { paddingBottom: 30, paddingHorizontal: 20 },
 });

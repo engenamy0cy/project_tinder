@@ -30,7 +30,7 @@ export function ChatPanel({ visible, match, userId, onClose }: Props) {
   const [sending, setSending] = useState(false);
 
   const load = useCallback(async () => {
-    if (!match) return;
+    if (!match || !match.match_id) return;
     setLoading(true);
     try {
       const rows = await fetchMessages(match.match_id, userId);
