@@ -37,17 +37,29 @@ def register(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login(request):
+    print("=== LOGIN REQUEST ===")
+    print(f"  POST data: {request.data}")
     serializer = UserLoginSerializer(data=request.data)
     if not serializer.is_valid():
+        print(f"  Serializer errors: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    user = authenticate(
-        username=serializer.validated_data["username"],
-        password=serializer.validated_data["password"],
-    )
+    username = serializer.validated_data["username"]
+    password = serializer.validated_data["password"]
+    print(f"  Authenticating: username='{username}', password_len={len(password)}")
+
+    try:
+        user_obj = User.objects.get(username=username)
+        print(f"  User found: id={user_obj.id}, password_hash={user_obj.password[:30]}...")
+    except User.DoesNotExist:
+        print(f"  User NOT FOUND in DB: {username}")
+
+    user = authenticate(username=username, password=password)
     if not user:
+        print("  authenticate() returned None!")
         return Response(
             {"detail": "Неверные учетные данные"},
             status=status.HTTP_401_UNAUTHORIZED,
         )
+    print(f"  authenticate() OK: user_id={user.id}")
     return Response(_auth_response(user))
